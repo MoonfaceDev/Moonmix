@@ -1,0 +1,11 @@
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+pymongo = "^4.7.0"
+minio = "^7.2.6"
+faststream = {extras = ["rabbit"], version = "^0.5.3"}
+tensorflow-io-gcs-filesystem = "^0.31.0"
+spleeter = {git = "https://github.com/MoonfaceDev/spleeter.git", rev = "feat/upgrade-typer"}
+pydantic = "^2.7.1"

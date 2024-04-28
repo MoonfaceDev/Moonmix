@@ -1,0 +1,68 @@
+services:
+  frontend:
+    image: frontend:latest
+    build:
+      context: frontend
+    ports:
+      - "80:80"
+
+  api-server:
+    image: api-server:latest
+    build:
+      context: api-server
+    ports:
+      - "8000:80"
+    restart: on-failure
+
+  youtube-scraper:
+    image: youtube-scraper:latest
+    build:
+      context: youtube-scraper
+    restart: on-failure
+
+  song-repository:
+    image: song-repository:latest
+    build:
+      context: song-repository
+    restart: on-failure
+
+  track-splitter:
+    image: track-splitter:latest
+    build:
+      context: track-splitter
+    restart: on-failure
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo:/data/db
+
+  minio:
+    image: bitnami/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: password
+    volumes:
+      - minio:/data
+
+volumes:
+  mongo:
+  minio:
