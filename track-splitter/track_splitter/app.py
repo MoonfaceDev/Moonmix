@@ -27,7 +27,7 @@ app = FastStream(broker)
 async def setup_model(context: ContextRepo):
     context.set_global("db", MongoClient("mongo")[_DB_NAME])
     context.set_global("minio", Minio("minio:9000", secure=False, access_key="root", secret_key="password"))
-    context.set_global("separator", Separator("spleeter:5stems"))
+    context.set_global("separator", Separator("spleeter:4stems"))
 
 
 def _get_song(db: Database, song_id: str) -> InternalSong:

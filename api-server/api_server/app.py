@@ -51,6 +51,13 @@ async def upload_youtube(url: str = Body(), song_metadata: SongMetadata = Body()
         await broker.publish(task, queue="youtube-scraper")
 
 
+@app.post("/upload-spotify")
+async def upload_spotify(url: str = Body(), song_metadata: SongMetadata = Body()):
+    task = ScrapeTask(url=url, song_metadata=song_metadata)
+    async with RabbitBroker("amqp://guest:guest@rabbitmq:5672/") as broker:
+        await broker.publish(task, queue="spotify-scraper")
+
+
 @app.get("/search")
 async def search(request: SearchSongRequest = Depends()):
     async with httpx.AsyncClient() as client:

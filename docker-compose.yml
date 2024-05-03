@@ -20,6 +20,12 @@ services:
       context: youtube-scraper
     restart: on-failure
 
+  spotify-scraper:
+    image: spotify-scraper:latest
+    build:
+      context: spotify-scraper
+    restart: on-failure
+
   song-repository:
     image: song-repository:latest
     build:
