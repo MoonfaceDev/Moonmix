@@ -108,11 +108,11 @@ function SongCard({song: [id, metadata], onPrevious, onNext}: SongCardProps) {
                     />
                 </CardContent>
             </Box>
-            <CardMedia
+            {metadata.image_url && <CardMedia
                 component="img"
                 sx={{width: '10em'}}
                 image={metadata.image_url}
-            />
+            />}
         </StyledCard>
         <audio ref={audioRef}>
             <source src={`${BASE_URL}song/${id}/${trackType}`} type="audio/mp3"/>

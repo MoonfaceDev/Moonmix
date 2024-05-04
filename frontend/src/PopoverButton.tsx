@@ -10,7 +10,7 @@ type PopoverButtonProps = {
     positiveLabel?: string
     negativeLabel?: string
     onPositiveClick: () => void
-    children: ReactNode
+    children?: ReactNode
 };
 
 function PopoverButton({buttonProps, positiveLabel = 'OK', negativeLabel = 'Cancel', onPositiveClick, children}: PopoverButtonProps) {

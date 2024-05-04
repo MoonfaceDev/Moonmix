@@ -4,7 +4,7 @@ from faststream.rabbit import RabbitBroker
 from pydantic import TypeAdapter
 from starlette.middleware.cors import CORSMiddleware
 
-from api_server.models.song.metadata import SongGenre, SongMetadata
+from api_server.models.song.metadata import SongMetadata
 from api_server.models.song.requests import SearchSongRequest, RandomSongRequest
 from api_server.models.song.track_type import TrackType
 from api_server.models.tasks.scrape import ScrapeTask
@@ -20,42 +20,16 @@ app.add_middleware(
 )
 
 
-@app.post("/upload")
-async def upload(
-    file: UploadFile,
-    title: str = Form(),
-    artist: str = Form(),
-    year: int = Form(),
-    genre: SongGenre = Form(),
-    song_url: str | None = Form(),
-):
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            url="http://song-repository/upload",
-            data={
-                "title": title,
-                "artist": artist,
-                "year": year,
-                "genre": genre.value,
-                "song_url": song_url,
-            },
-            files={"file": (file.filename, file.file, file.content_type, file.headers)},
-        )
-        return Response(content=response.text, status_code=response.status_code, headers=response.headers)
-
-
 @app.post("/upload-youtube")
-async def upload_youtube(url: str = Body(), song_metadata: SongMetadata = Body()):
-    task = ScrapeTask(url=url, song_metadata=song_metadata)
+async def upload_youtube(url: str = Body(embed=True)):
     async with RabbitBroker("amqp://guest:guest@rabbitmq:5672/") as broker:
-        await broker.publish(task, queue="youtube-scraper")
+        await broker.publish(ScrapeTask(url=url), queue="youtube-scraper")
 
 
 @app.post("/upload-spotify")
-async def upload_spotify(url: str = Body(), song_metadata: SongMetadata = Body()):
-    task = ScrapeTask(url=url, song_metadata=song_metadata)
+async def upload_spotify(url: str = Body(embed=True)):
     async with RabbitBroker("amqp://guest:guest@rabbitmq:5672/") as broker:
-        await broker.publish(task, queue="spotify-scraper")
+        await broker.publish(ScrapeTask(url=url), queue="spotify-scraper")
 
 
 @app.get("/search")

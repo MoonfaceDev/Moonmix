@@ -8,7 +8,7 @@ from starlette.responses import Response
 
 from song_repository.base_song_repository import BaseSongRepository, TrackNotFound
 from song_repository.models.song.internal import TrackType
-from song_repository.models.song.metadata import SongGenre, SongMetadata
+from song_repository.models.song.metadata import SongMetadata
 from song_repository.models.song.requests import SearchSongRequest, RandomSongRequest
 from song_repository.song_repository import SongRepository
 
@@ -28,9 +28,8 @@ def get_song_repository() -> BaseSongRepository:
 async def upload(
     file: UploadFile,
     title: str = Form(),
-    artist: str = Form(),
-    year: int = Form(),
-    genre: SongGenre = Form(),
+    artist: str | None = Form(),
+    year: int | None = Form(),
     image_url: str | None = Form(),
     song_repository: BaseSongRepository = Depends(get_song_repository),
 ) -> str:
@@ -38,7 +37,7 @@ async def upload(
     song_data = await file.read()
 
     return await song_repository.upload(
-        metadata=SongMetadata(title=title, artist=artist, year=year, genre=genre, image_url=image_url),
+        metadata=SongMetadata(title=title, artist=artist, year=year, image_url=image_url),
         song_data=song_data,
         codec=codec,
     )

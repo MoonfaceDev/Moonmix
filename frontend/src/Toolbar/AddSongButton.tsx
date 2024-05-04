@@ -1,66 +1,60 @@
 import {Add} from "@mui/icons-material";
-import React, {Dispatch, useState} from "react";
+import React, {useCallback, useMemo, useState} from "react";
 import {
     List,
     ListItem,
     ListItemSecondaryAction,
     ListItemText,
-    MenuItem,
     TextField,
-    TextFieldProps
+    ToggleButton,
+    ToggleButtonGroup
 } from "@mui/material";
 import PopoverButton from "../PopoverButton";
 import {api} from "../api";
-import {SongGenre} from "../types";
 import {enqueueSnackbar} from "notistack";
 
-type PopoverTextFieldProps = {
-    label: string
-    value: string
-    onChange: Dispatch<string>
-    textFieldProps?: Partial<TextFieldProps>
-}
-
-function PopoverTextField({label, value, onChange, textFieldProps}: PopoverTextFieldProps) {
-    return <ListItem>
-        <ListItemText>{label}</ListItemText>
-        <ListItemSecondaryAction>
-            <TextField sx={{width: '10em'}} size="small" value={value}
-                       onChange={event => onChange(event.target.value)} {...textFieldProps}/>
-        </ListItemSecondaryAction>
-    </ListItem>
-}
+type SourceType = 'youtube' | 'spotify';
 
 function AddSongButton() {
+    const [uploadYoutube] = api.useUploadYoutubeMutation();
+    const [uploadSpotify] = api.useUploadSpotifyMutation();
+
+    const [sourceType, setSourceType] = useState<SourceType>('youtube');
     const [url, setUrl] = useState<string>('');
-    const [title, setTitle] = useState<string>('');
-    const [artist, setArtist] = useState<string>('');
-    const [genre, setGenre] = useState<SongGenre>('Rock');
-    const [year, setYear] = useState<string>('1970');
-    const [upload] = api.useUploadYoutubeMutation();
+
+    const uploadPromises = useMemo<Record<SourceType, () => Promise<void>>>(() => ({
+        youtube: () => uploadYoutube({url}).unwrap(),
+        spotify: () => uploadSpotify({url}).unwrap(),
+    }), [uploadYoutube, uploadSpotify, url]);
+
+    const onSubmit = useCallback(async () => {
+        await uploadPromises[sourceType]();
+        enqueueSnackbar('Song upload is queued', {variant: 'info'});
+    }, [uploadPromises, sourceType]);
 
     return <PopoverButton
         buttonProps={{size: 'large', startIcon: <Add/>, variant: 'outlined', children: 'Add song'}}
         positiveLabel="Upload"
-        onPositiveClick={() => upload({url, song_metadata: {title, artist, genre, year: Number(year)}}).then(() => {
-            enqueueSnackbar('Song upload is queued', {variant: 'info'});
-        })}
+        onPositiveClick={onSubmit}
     >
         <List sx={{width: '20em'}}>
-            <PopoverTextField label="Youtube URL" value={url} onChange={setUrl}/>
-            <PopoverTextField label="Title" value={title} onChange={setTitle}/>
-            <PopoverTextField label="Artist" value={artist} onChange={setArtist}/>
-            <PopoverTextField label="Genre" value={genre} onChange={value => setGenre(value as SongGenre)}
-                              textFieldProps={{
-                                  select: true,
-                                  children: [
-                                      <MenuItem value={'Israeli Rock'}>Israeli Rock</MenuItem>,
-                                      <MenuItem value={'Pop'}>Pop</MenuItem>,
-                                      <MenuItem value={'Rap'}>Rap</MenuItem>,
-                                      <MenuItem value={'Rock'}>Rock</MenuItem>,
-                                  ],
-                              }}/>
-            <PopoverTextField label="Year" value={year} onChange={setYear}/>
+            <ListItem>
+                <ListItemText>Source type</ListItemText>
+                <ListItemSecondaryAction>
+                    <ToggleButtonGroup size="small" exclusive value={sourceType}
+                                       onChange={(event, value) => setSourceType(value as SourceType)}>
+                        <ToggleButton value="youtube">Youtube</ToggleButton>
+                        <ToggleButton value="spotify">Spotify</ToggleButton>
+                    </ToggleButtonGroup>
+                </ListItemSecondaryAction>
+            </ListItem>
+            <ListItem>
+                <ListItemText>Song URL</ListItemText>
+                <ListItemSecondaryAction>
+                    <TextField sx={{width: '10em'}} size="small" value={url}
+                               onChange={event => setUrl(event.target.value)}/>
+                </ListItemSecondaryAction>
+            </ListItem>
         </List>
     </PopoverButton>;
 }

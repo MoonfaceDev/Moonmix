@@ -3,7 +3,7 @@ import lennon from "../Assets/lennon.png";
 import React, {Dispatch, SetStateAction, useCallback, useState} from "react";
 import SongCard from "./SongCard/SongCard";
 import RandomizeButton from "./RandomizeButton";
-import {GameSettings, Song} from "../types";
+import {Song} from "../types";
 import {api} from "../api";
 
 const LennonCircle = styled('div')(({theme}) => `
@@ -23,21 +23,16 @@ type MainContentProps = {
 }
 
 function MainContent({songHistory, setSongHistory}: MainContentProps) {
-    const [gameSettings, setGameSettings] = useState<GameSettings>({
-        genre: 'any',
-    });
     const [game, setGame] = useState<boolean>(false);
     const [getRandom] = api.useLazyRandomQuery();
 
     const addSong = useCallback(() => {
-        getRandom({
-            genre: gameSettings.genre === 'any' ? undefined : gameSettings.genre,
-        }).then(({data}) => {
+        getRandom({}).then(({data}) => {
             if (data) {
                 setSongHistory(prev => [...prev, data]);
             }
         });
-    }, [gameSettings.genre, getRandom, setSongHistory]);
+    }, [getRandom, setSongHistory]);
 
     return <Container sx={{flex: '1', display: 'flex'}} maxWidth="xl">
         <Box sx={{
@@ -59,9 +54,7 @@ function MainContent({songHistory, setSongHistory}: MainContentProps) {
             </Typography>
             <div/>
             <RandomizeButton
-                defaultSettings={gameSettings}
-                onStart={newValue => {
-                    setGameSettings(newValue);
+                onStart={() => {
                     setGame(true);
                     addSong();
                 }}

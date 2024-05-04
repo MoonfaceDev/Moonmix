@@ -72,8 +72,7 @@ class SongRepository(BaseSongRepository):
             if query.free_text
             else {}
         )
-        genre_filter = {"metadata.genre": query.genre} if query.genre else {}
-        return genre_filter | title_filter
+        return title_filter
 
     def _get_audio_object(self, object_name: str) -> bytes:
         response = self._minio.get_object(SongRepository._BUCKET_NAME, object_name)

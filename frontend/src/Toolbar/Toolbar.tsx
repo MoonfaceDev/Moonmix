@@ -1,6 +1,5 @@
 import logo from "../Assets/logo.png";
-import {Button as MuiButton, styled, Toolbar as MuiToolbar} from "@mui/material";
-import {Add} from "@mui/icons-material";
+import {styled, Toolbar as MuiToolbar} from "@mui/material";
 import ThemeSwitch from "./ThemeSwitch";
 import React, {useContext} from "react";
 import {ColorModeContext} from "../ColorModeContext";
@@ -23,10 +22,6 @@ const ToolbarSection = styled('div')`
   display: flex;
   align-items: center;
   gap: 1em;
-`;
-
-const Button = styled(MuiButton)`
-  border-radius: 10em;
 `;
 
 export type ToolbarProps = {

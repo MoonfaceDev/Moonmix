@@ -1,22 +1,24 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
-import {Song, SongGenre, SongMetadata} from "./types";
+import {Song} from "./types";
 
-type SearchSongParameters = {
+type SongQuery = {
     free_text?: string
-    genre?: SongGenre
+}
+
+type SearchSongRequest = SongQuery & {
     page_index?: number
     page_size?: number
 }
 
-type RandomSongParameters = {
-    free_text?: string
-    genre?: SongGenre
-}
+type RandomSongRequest = SongQuery;
 
-type YoutubeUploadParameters = {
+type UploadYoutubeRequest = {
     url: string
-    song_metadata: SongMetadata
-}
+};
+
+type UploadSpotifyRequest = {
+    url: string
+};
 
 export const BASE_URL = 'http://localhost:8000/';
 
@@ -26,27 +28,34 @@ export const api = createApi({
         baseUrl: BASE_URL
     }),
     endpoints: (builder) => ({
-        search: builder.query<Song[], SearchSongParameters>({
-            query: params => ({
+        search: builder.query<Song[], SearchSongRequest>({
+            query: request => ({
                 method: 'GET',
                 url: 'search',
-                params,
+                params: request,
             }),
         }),
-        random: builder.query<Song, RandomSongParameters>({
-            query: params => ({
+        random: builder.query<Song, RandomSongRequest>({
+            query: request => ({
                 method: 'GET',
                 url: 'random',
-                params,
+                params: request,
                 cache: 'no-cache'
             }),
             forceRefetch: () => true,
         }),
-        uploadYoutube: builder.mutation<void, YoutubeUploadParameters>({
-            query: params => ({
+        uploadYoutube: builder.mutation<void, UploadYoutubeRequest>({
+            query: request => ({
                 method: 'POST',
                 url: 'upload-youtube',
-                body: params,
+                body: request,
+            }),
+        }),
+        uploadSpotify: builder.mutation<void, UploadSpotifyRequest>({
+            query: request => ({
+                method: 'POST',
+                url: 'upload-spotify',
+                body: request,
             }),
         }),
     }),

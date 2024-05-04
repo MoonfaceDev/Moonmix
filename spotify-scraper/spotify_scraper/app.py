@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import json
+import tempfile
 from typing import IO, AsyncIterator
 
 import httpx
@@ -37,13 +38,24 @@ async def _upload(buffer: IO[bytes], song_metadata: SongMetadata) -> None:
 async def _process_task(task: ScrapeTask):
     print(f'Received a new task: {task.json()}')
 
-    downloader = spotdl.Downloader(loop=asyncio.get_event_loop())
-    song, path = await downloader.pool_download(spotdl.Song.from_url(task.url))
+    with tempfile.TemporaryDirectory() as out_dir:
+        downloader = spotdl.Downloader(
+            settings={"output": f"{out_dir}/{{title}}.{{output-ext}}"},
+            loop=asyncio.get_event_loop(),
+        )
 
-    song_metadata = task.song_metadata
-    song_metadata.image_url = song.cover_url
+        song, path = await downloader.pool_download(spotdl.Song.from_url(task.url))
 
-    with path.open('rb') as audio_file:
-        await _upload(audio_file, song_metadata)
+        song_metadata = SongMetadata(
+            title=song.name,
+            artist=song.artist,
+            year=song.year,
+            image_url=song.cover_url,
+        )
+
+        with path.open('rb') as audio_file:
+            await _upload(audio_file, song_metadata)
+
+        downloader.progress_handler.close()
 
     print('Finished task')

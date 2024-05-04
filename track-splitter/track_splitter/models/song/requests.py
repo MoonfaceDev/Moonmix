@@ -5,12 +5,9 @@ from typing import Annotated, Optional
 
 from pydantic import BaseModel, Field
 
-from track_splitter.models.song.metadata import SongGenre
-
 
 class SongQuery(BaseModel):
     free_text: Optional[Annotated[str, Field(pattern=re.compile(r"^[\w\s]+$"))]] = None
-    genre: Optional[SongGenre] = None
 
 
 class SearchSongRequest(SongQuery):

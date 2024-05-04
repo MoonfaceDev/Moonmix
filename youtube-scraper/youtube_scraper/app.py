@@ -45,9 +45,12 @@ async def _process_task(task: ScrapeTask):
         with youtube_dl.YoutubeDL(_get_youtube_dl_options(out_dir)) as ydl:
             info_dict = ydl.extract_info(task.url, download=True)
 
-        song_metadata = task.song_metadata
-        thumbnail_url = info_dict.get('thumbnail')
-        song_metadata.image_url = thumbnail_url
+        song_metadata = SongMetadata(
+            title=info_dict.get('track', info_dict['title']),
+            artist=info_dict.get('artist'),
+            year=info_dict.get('release_year'),
+            image_url=info_dict['thumbnail'],
+        )
 
         audio_file_path = next(out_dir.iterdir())
         with audio_file_path.open('rb') as audio_file:
